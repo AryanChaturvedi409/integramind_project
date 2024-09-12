@@ -27,4 +27,4 @@ def create_app():
     api.init_app(app)
     jwt.init_app(app)
 
-    return appi
+    return app
