@@ -1,16 +1,16 @@
 import re
 import string
 import bcrypt
-from config import LOCAL_MONGO_DATABASE, LOCAL_MONGO_URI
 import pymongo
 from random import choice
-from flask_bcrypt import Bcrypt
 from bson import ObjectId
 
+# Hardcoded values for MongoDB connection
+LOCAL_MONGO_URI = "mongodb://localhost:27017"
+LOCAL_MONGO_DATABASE = "gla1"
 
 client = pymongo.MongoClient(LOCAL_MONGO_URI)
 mdb = client[LOCAL_MONGO_DATABASE]
-
 
 # Function to hash the password
 def hash_password(password):
@@ -18,18 +18,14 @@ def hash_password(password):
     hashed_password = bcrypt.hashpw(password.encode("utf-8"), salt)
     return hashed_password.decode("utf-8")
 
-
 def numGenerator(size=6, chars=string.digits):
-    return "".join(choice(chars) for x in range(size))
-
+    return "".join(choice(chars) for _ in range(size))
 
 def alphaNumGenerator(size=4, chars="ABCDEFGHJKLMNPQRSTUVWYZ123456789"):
-    return "".join(choice(chars) for x in range(size))
-
+    return "".join(choice(chars) for _ in range(size))
 
 def verifyPassword(bcryptPasswordHash, password):
-    return Bcrypt().check_password_hash(bcryptPasswordHash, password)
-
+    return bcrypt.checkpw(password.encode("utf-8"), bcryptPasswordHash.encode("utf-8"))
 
 def safelyConvertToInt(str):
     try:
@@ -37,13 +33,11 @@ def safelyConvertToInt(str):
     except ValueError:
         return str
 
-
 def cleanupEmail(value, ifEmpty=""):
     if not value:
         return ifEmpty
 
     return cleanupValue(value, returnType="string").lower()
-
 
 def cleanupValue(value, returnType="string", ifEmpty=None):
     if returnType == "list":
@@ -65,10 +59,8 @@ def cleanupValue(value, returnType="string", ifEmpty=None):
 
     return value
 
-
 def bcryptPasswordHash(password):
-    return Bcrypt().generate_password_hash(password).decode("utf-8")
-
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 def maskEmail(value, ifEmpty=False):
     regex = (
@@ -80,10 +72,8 @@ def maskEmail(value, ifEmpty=False):
 
     return result
 
-
 def mdbObjectIdToStr(mongoId):
     return str(mongoId) if mongoId else None
-
 
 def strToMongoId(str):
     return ObjectId(str) if str else None
